@@ -5,12 +5,10 @@ chrome.storage.sync.get("wiktlanguage", function(obj) {
 chrome.storage.sync.get("searchlanguage", obj => {
     searchlang = obj.searchlanguage;
 })
-localStorage.locale_pref || lang;
 window.addEventListener('load', function(evt) {
     document.getElementById('search').addEventListener('submit', openURL);
-    document.getElementById("word").placeholder = chrome.i18n.getMessage("popup");
+    document.getElementById("word").placeholder = "Search Wiktionary";
     document.getElementById('word').focus();
-
 });
 
 function openURL() {
