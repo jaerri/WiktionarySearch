@@ -1,51 +1,67 @@
-// document.title = chrome.i18n.getMessage("opts_title");
-// document.getElementById("title").innerHTML = chrome.i18n.getMessage("opts_title");
-document.getElementById("desc").innerHTML = chrome.i18n.getMessage("opts_desc");
+let btn = document.getElementsByName('wiktlanguage');
+let wikiurl = 'https://*.wiktionary.org/wiki/%s';
+let wiktlang, searchlang;
 
-
-var btn = document.getElementsByName('language');
-var wikiurl = 'https://*.wiktionary.org';
-
-function save() {
-    for (var i = 0; i < btn.length; i++) {
-        if (btn[i].checked) {
-            chrome.storage.sync.set({
-                "language": btn[i].value
-            });
-            var a = document.querySelector("#url a");
-            a.innerHTML = '';
-            a.innerHTML = wikiurl.replace('*', btn[i].value);
-            a.href = wikiurl.replace('*', btn[i].value);
-            break;
-        }
-    }
-    var status = document.getElementById('status');
-    status.textContent = chrome.i18n.getMessage("saved");
-    setTimeout(function() {
-        status.textContent = '';
-    }, 5000);
+async function update() {
+    wiktlang = await chrome.storage.sync.get("wiktlanguage");
+    searchlang = await chrome.storage.sync.get("searchlanguage");
+    wiktlang = wiktlang.wiktlanguage;
+    searchlang = searchlang.searchlanguage;
+    let a = document.querySelector("#url a");
+    let url = wikiurl.replace('*', wiktlang) + (searchlang?'#'+searchlang:"");
+    a.innerHTML = url;
+    a.href = url;
 }
 
-function restore_options() {
-    chrome.storage.sync.get({
-        language: chrome.i18n.getMessage("iso"),
-    }, function(obj) {
-        for (var i = 0; i < btn.length; i++) {
-            if (btn[i].value == obj.language) {
-                btn[i].checked = true;
-                document.querySelector("[for='*']".replace('*', btn[i].value)).scrollIntoView();
-                window.scrollBy(0, -200);
-                var a = document.querySelector("#url a");
-                a.innerHTML = wikiurl.replace('*', obj.language);
-                a.href = wikiurl.replace('*', obj.language);
-            }
-        }
-
+function changeWiktionary(lang) {
+    chrome.storage.sync.set({
+        wiktlanguage: lang
+    }).then(()=>{
+        console.log(lang);
+        let status = document.getElementById('status');
+        status.textContent = "Wiktionary setting saved";
+        setTimeout(function() {
+            status.textContent = '';
+        }, 3000);
+        update();
     });
 }
 
+document.getElementById("search-save").addEventListener("click", ()=>{
+    let searchInp = document.getElementById("search-inp");
+    chrome.storage.sync.set({"searchlanguage": searchInp.value});
+    update();
+})
+document.getElementById("wikt-save").addEventListener("click", e=>{
+    let wiktInp = document.getElementById("wikt-inp");
+    chrome.storage.sync.set({"wiktlanguage": wiktInp.value});
+    restore_options();
+})
+
+function restore_options() {
+    chrome.storage.sync.get("wiktlanguage", function(obj) {
+        for (let i = 0; i < btn.length; i++) {
+            if (btn[i].value == obj.wiktlanguage) {
+                btn[i].checked = true;
+                document.querySelector("[for='*']".replace('*', btn[i].value)).scrollIntoView();
+                window.scrollBy(0, -200);
+                let a = document.querySelector("#url a");
+                a.innerHTML = wikiurl.replace('*', obj.wiktlanguage);
+                a.href = wikiurl.replace('*', obj.wiktlanguage);
+            }
+        }
+    });
+    update();
+}
+
 document.addEventListener('DOMContentLoaded', restore_options);
-for (var i = 0; i < btn.length; i++) {
-    btn[i].addEventListener('click',
-        save);
+for (let i = 0; i < btn.length; i++) {
+    btn[i].addEventListener('click', function(){
+        for (let i = 0; i < btn.length; i++) {
+            if (btn[i].checked) {
+                changeWiktionary(btn[i].value);
+                break;
+            }
+        }
+    });
 }
