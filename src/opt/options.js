@@ -34,6 +34,7 @@ document.getElementById("search-save").addEventListener("click", ()=>{
 })
 document.getElementById("wikt-save").addEventListener("click", e=>{
     let wiktInp = document.getElementById("wikt-inp");
+    if (wiktInp.value === "") return;
     chrome.storage.sync.set({"wiktlanguage": wiktInp.value});
     restore_options();
 })
