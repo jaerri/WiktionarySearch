@@ -1,17 +1,19 @@
 let lang, searchlang;
-chrome.storage.sync.get("wiktlanguage", function(obj) {
+async function update() {
+    let obj = await chrome.storage.sync.get("wiktlanguage");
     lang = obj.wiktlanguage;
-});
-chrome.storage.sync.get("searchlanguage", obj => {
+    
+    obj = await chrome.storage.sync.get("searchlanguage");
     searchlang = obj.searchlanguage;
-})
-window.addEventListener('load', function(evt) {
+}
+window.addEventListener('load', async function(evt) {
+    await update();
     document.getElementById('search').addEventListener('submit', openURL);
-    document.getElementById("word").placeholder = "Search Wiktionary";
+    document.getElementById("word").placeholder = `Search Wiktionary (${lang})`;
     document.getElementById('word').focus();
 });
 
-function openURL() {
+async function openURL() {
     event.preventDefault();
     let word = encodeURIComponent(document.getElementById('word').value);
     chrome.tabs.create({
