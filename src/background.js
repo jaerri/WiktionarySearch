@@ -10,11 +10,12 @@ chrome.storage.sync.get("wiktlanguage", function(obj) {
 chrome.storage.sync.get("searchlanguage", obj => {
     searchlang = obj.searchlanguage;
 })
-
-chrome.contextMenus.create({
-    "id": "wiktionary",
-    "title": 'Search Wiktionary for "%s"',
-    "contexts": ["selection"],
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        "id": "wiktionary",
+        "title": 'Search Wiktionary for "%s"',
+        "contexts": ["selection"],
+    });
 });
 chrome.contextMenus.onClicked.addListener(function(e){
     let wikURL = "https://" + lang + ".wiktionary.org/wiki/" + encodeURI(e.selectionText) + (searchlang?"#" + searchlang:"")
